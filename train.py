@@ -50,24 +50,26 @@ class WasteDataset(Dataset):
 
 
 def build_balanced_subset():
-    """Streams the dataset and keeps up to IMAGES_PER_CLASS examples per label,
-    so we don't have to download the full ~3.7GB dataset."""
-    print(f"Streaming {DATASET_ID} and sampling {IMAGES_PER_CLASS} images/class...")
-    stream = load_dataset(DATASET_ID, split="train", streaming=True)
-    label_names = stream.features["label"].names
+    """Downloads the dataset (cached after the first run) and keeps up to
+    IMAGES_PER_CLASS examples per label. Non-streaming: streaming mode crashes
+    with a MemoryError decoding some images in this dataset."""
+    print(f"Loading {DATASET_ID} (downloads ~3.7GB the first time, cached after)...")
+    dataset = load_dataset(DATASET_ID, split="train")
+    label_names = dataset.features["label"].names
 
+    dataset = dataset.shuffle(seed=42)
     counts = {i: 0 for i in range(len(label_names))}
-    examples = []
-    for example in stream:
-        label = example["label"]
+    indices = []
+    for i, label in enumerate(dataset["label"]):
         if counts[label] < IMAGES_PER_CLASS:
-            examples.append(example)
+            indices.append(i)
             counts[label] += 1
         if all(c >= IMAGES_PER_CLASS for c in counts.values()):
             break
 
-    print(f"Collected {len(examples)} images: {counts}")
-    return examples, label_names
+    subset = dataset.select(indices)
+    print(f"Selected {len(subset)} images: {counts}")
+    return subset, label_names
 
 
 def build_model(num_classes):
