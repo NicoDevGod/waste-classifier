@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.venv-train/
+venv/
+
+# Hugging Face datasets cache (if downloaded locally instead of streamed)
+.cache/
+
+# OS
+.DS_Store
