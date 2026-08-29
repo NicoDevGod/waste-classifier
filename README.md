@@ -12,6 +12,9 @@ MobileNetV2, exported to ONNX for a lightweight, GPU-free deployment.
   the deployed app's memory footprint small)
 - **UI**: [Gradio](https://www.gradio.app/)
 
+New to transfer learning? [`docs/HOW_IT_WORKS.md`](docs/HOW_IT_WORKS.md) (in Spanish)
+walks through `train.py` and `app.py` step by step — what each part does and why.
+
 ## Local setup
 
 Training and inference use **different** dependencies — training needs PyTorch
