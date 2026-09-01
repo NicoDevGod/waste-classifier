@@ -12,6 +12,15 @@ IMAGE_SIZE = 160
 MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
 STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
+LABELS_ES = {
+    "cardboard": "cartón",
+    "glass": "vidrio",
+    "metal": "metal",
+    "paper": "papel",
+    "plastic": "plástico",
+    "trash": "basura",
+}
+
 
 def load_model():
     session = ort.InferenceSession(str(MODEL_DIR / "waste_classifier.onnx"))
@@ -41,7 +50,7 @@ def make_predict_fn(session, labels):
         inputs = preprocess(image)
         (logits,) = session.run(None, {input_name: inputs})
         probs = softmax(logits[0])
-        return {label: float(prob) for label, prob in zip(labels, probs)}
+        return {LABELS_ES.get(label, label): float(prob) for label, prob in zip(labels, probs)}
 
     return predict
 
@@ -50,13 +59,13 @@ def main():
     session, labels = load_model()
     demo = gr.Interface(
         fn=make_predict_fn(session, labels),
-        inputs=gr.Image(type="pil", label="Upload a photo of an item"),
-        outputs=gr.Label(num_top_classes=6, label="Predicted category"),
-        title="Recyclable Waste Classifier",
+        inputs=gr.Image(type="pil", label="Sube una foto del objeto"),
+        outputs=gr.Label(num_top_classes=6, label="Categoría predicha"),
+        title="Clasificador de Residuos Reciclables",
         description=(
-            "Upload a photo of an item and this model predicts which recycling "
-            "category it belongs to: cardboard, glass, metal, paper, plastic or trash. "
-            "Fine-tuned MobileNetV2, running on ONNX Runtime (no GPU needed)."
+            "Sube una foto de un objeto y el modelo predice a qué categoría de "
+            "reciclaje pertenece: cartón, vidrio, metal, papel, plástico o basura. "
+            "MobileNetV2 ajustado (fine-tuned), corriendo en ONNX Runtime (sin GPU)."
         ),
     )
     port = int(os.environ.get("PORT", 7860))
